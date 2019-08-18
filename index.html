@@ -31,11 +31,46 @@
                     zoom: 13
                 });
 
+                function createFillSymbol(value, color) {
+                    return {
+                        value: value,
+                        symbol: {
+                            color: color,
+                            type: "simple-fill",
+                            style: "solid",
+                            outline: {
+                                style: "none"
+                            }
+                        },
+
+                        label: value
+                    };
+                }
+
+                var mapPLUTORender = {
+                    type: "unique-value",
+                    field: "LandUse",
+                    uniqueValueInfos: [
+                        createFillSymbol("01","#F9EDDB"),   // One & Two Family Buildings
+                        createFillSymbol("02", "#F6D9CB"),  // Multi-Family Walk-Up Buildings
+                        createFillSymbol("03", "#F6D9CB"),  // Multi-Family Elevator Buildings 
+                        createFillSymbol("04", "#F1B89C"),  // Mixed Residential & Commercial Buildings
+                        createFillSymbol("05", "#DF7649"),  // Commercial & Office Buildings
+                        createFillSymbol("06", "#CF4F4F"),  // Industrial & Manufacturing
+                        createFillSymbol("07", "#BEC6CC"),  // Transportation & Utility
+                        createFillSymbol("08", "#BDE7F4"),  // Public Facilities & Institutions
+                        createFillSymbol("09", "#A3D393"),  // Open Space & Outdoor Recreation
+                        createFillSymbol("10", "#8DA2B4"),  // Parking Facilities
+                        createFillSymbol("11", "#E4E4E4"),  // Vacant 
+                    ]
+                };
+
                 var mapPLUTO = new FeatureLayer({
-                    url: "http://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/MAPPLUTO/FeatureServer/0"
+                    url: "http://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/MAPPLUTO/FeatureServer/0",
+                    renderer: mapPLUTORender
                 });
 
-                map.add(mapPLUTO);
+                map.add(mapPLUTO, 0);
             });
         </script>
     </head>
