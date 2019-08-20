@@ -18,8 +18,9 @@
             require([
                 "esri/Map",
                 "esri/views/MapView",
-                "esri/layers/FeatureLayer"
-            ], function(Map, MapView, FeatureLayer) {
+                "esri/layers/FeatureLayer",
+                "esri/widgets/Legend"
+            ], function(Map, MapView, FeatureLayer, Legend) {
                 var map = new Map({
                     basemap: "gray-vector"
                 });
@@ -28,6 +29,7 @@
                     container: "viewDiv",
                     map: map,
                     center: [-73.994, 40.729],
+                    rotation: -29,
                     zoom: 13
                 });
 
@@ -43,9 +45,24 @@
                             }
                         },
 
-                        label: value
+                        label: landUseNames[value]
                     };
                 }
+
+                // Data dictionary for Land Use.
+                var landUseNames = {
+                    '01': 'One & Two Family Buildings',
+                    '02': 'Multi-Family Walk-Up Buildings',
+                    '03': 'Multi-Family Elevator Buildings',
+                    '04': 'Mixed Residential & Commercial Buildings',
+                    '05': 'Commercial & Office Buildings',
+                    '06': 'Industrial & Manufacturing',
+                    '07': 'Transportation & Utility',
+                    '08': 'Public Facilities & Institutions',
+                    '09': 'Open Space & Outdoor Recreation',
+                    '10': 'Parking Facilities',
+                    '11': 'Vacant Land'
+                };
 
                 var mapPLUTORender = {
                     type: "unique-value",
@@ -65,12 +82,30 @@
                     ]
                 };
 
+                var popupMapPLUTO = {
+                    "title": "{Address}",
+                    "content": "Land use type is: {LandUse}." // TODO implement label                    
+                };
+
                 var mapPLUTO = new FeatureLayer({
                     url: "http://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/MAPPLUTO/FeatureServer/0",
-                    renderer: mapPLUTORender
+                    outfield: ["Address", "Borough", "LandUse"],
+                    definitionExpression: "Borough = 'MN'",
+                    renderer: mapPLUTORender,
+                    popupTemplate: popupMapPLUTO
                 });
 
                 map.add(mapPLUTO, 0);
+
+                var legend = new Legend({
+                    view: view,
+                    layerInfo: [{
+                        layer: mapPLUTO,
+                        title: "Legend"
+                    }]
+                });
+
+                view.ui.add(legend, "top-right");
             });
         </script>
     </head>
