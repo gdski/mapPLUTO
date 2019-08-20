@@ -21,6 +21,8 @@
                 "esri/layers/FeatureLayer",
                 "esri/widgets/Legend"
             ], function(Map, MapView, FeatureLayer, Legend) {
+                let mapPLUTOView;
+
                 var map = new Map({
                     basemap: "gray-vector"
                 });
@@ -29,7 +31,7 @@
                     container: "viewDiv",
                     map: map,
                     center: [-73.994, 40.729],
-                    rotation: -29,
+                    rotation: -29, // Manhattan Grid "North" rotation
                     zoom: 13
                 });
 
@@ -64,6 +66,67 @@
                     '11': 'Vacant Land'
                 };
 
+
+                var boroughExpr = ["Select a Borough", "Borough = 'MN'", "Borough = 'BN'", "Borough = 'BX'", "Borough = 'QN'", "Borough = 'SI'"];
+
+                // Selector for filtering by Borough.
+                var selectFilter = document.createElement("select");
+                selectFilter.setAttribute("class", "esri-widget esri-select");
+                selectFilter.setAttribute("style", "width: 300px; font-family: Avenir Next W00; font-size: 1em;");
+
+                boroughExpr.forEach(function(sql){
+                    var option = document.createElement("option");
+                    option.value = sql;
+                    option.innerHTML = sql;
+                    selectFilter.appendChild(option);
+                });
+
+                view.ui.add(selectFilter, "top-right");
+
+                function setFeatureLayerViewFilter(expression) {
+                    view.whenLayerView(mapPLUTO).then(function(featureLayerView) {
+                        featureLayerView.effect = {
+                            filter: {
+                                where: expression
+                            },
+                            excludedEffect: "opacity(25%)"
+                        }
+                    });
+                }
+
+                selectFilter.addEventListener('change', function(event) {
+                    //setFeatureLayerFilter(event.target.value);
+                    setFeatureLayerViewFilter(event.target.value);
+                });
+
+  /*              // Selector for filtering by Borough.
+                var selectFilter = document.createElement("select");
+                selectFilter.setAttribute("class", "esri-widget esri-select");
+                selectFilter.setAttribute("style", "width: 300px; font-family: Avenir Next W00; font-size: 1em;");
+
+                var boroughExpr = ["Borough = 'MN'", "Borough = 'BN'", "Borough = 'BX'", "Borough = 'QN'", "Borough = 'SI'"];
+                boroughExpr.forEach(function(sql){
+                    var option = document.createElement("option");
+                    option.value = sql;
+                    option.innerHTML = sql;
+                    selectFilter.appendChild(option);
+                });
+
+                view.ui.add(selectFilter, "top-right");
+
+                selectFilter.addEventListener("change", filterByBorough);
+
+                function filterByBorough(event) {
+                    const selectedBorough = event.target.getAttribute("Borough");
+                    mapPLUTOView.filter = {
+                        where: "Borough = '" + selectedBorough + "'"
+                    };
+                }
+
+                view.whenLayerView(mapPLUTO).then(function(layerView) {
+                    mapPLUTOView = layerView;
+                }); */
+                
                 var mapPLUTORender = {
                     type: "unique-value",
                     field: "LandUse",
@@ -82,15 +145,21 @@
                     ]
                 };
 
+
+
                 var popupMapPLUTO = {
-                    "title": "{Address}",
-                    "content": "Land use type is: {LandUse}." // TODO implement label                    
+                    "title": "Property Address: {Address}",
+                    expressionInfos: [{
+                        name: "format-year",
+                        expression: "Text($feature.YearBuilt)"
+                    }],
+                    "content": "Current structure built in {expression/format-year}."                     
                 };
 
                 var mapPLUTO = new FeatureLayer({
                     url: "http://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/MAPPLUTO/FeatureServer/0",
-                    outfield: ["Address", "Borough", "LandUse"],
-                    definitionExpression: "Borough = 'MN'",
+                    outfield: ["Address", "Borough", "LandUse", "YearBuilt"],
+                    // definitionExpression: "Borough = 'MN'",
                     renderer: mapPLUTORender,
                     popupTemplate: popupMapPLUTO
                 });
